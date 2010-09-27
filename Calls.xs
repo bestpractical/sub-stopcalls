@@ -1,0 +1,9 @@
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+MODULE = No::Calls   PACKAGE = No::Calls
+
+PROTOTYPES: DISABLE
+
+
