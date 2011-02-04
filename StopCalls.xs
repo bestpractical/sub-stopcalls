@@ -154,7 +154,7 @@ void_case(pTHX_ call_info* info) {
 }
 
 static void
-no_more_calls(pTHX)
+stop(pTHX)
 {
     call_info info = caller_info(aTHX);
     switch( info.cx->blk_gimme ) {
@@ -166,12 +166,12 @@ no_more_calls(pTHX)
             void_case( &info );
     }
 }
-MODULE = No::Calls   PACKAGE = No::Calls
+
+MODULE = Sub::StopCalls   PACKAGE = Sub::StopCalls
 
 PROTOTYPES: DISABLE
 
-
 void
-no_more_calls()
+stop(class, ...)
     C_ARGS:
     aTHX

@@ -3,15 +3,15 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
-use No::Calls;
+use_ok('Sub::StopCalls');
 
 my $i = 0;
 
 sub foo {
     $i++;
-    return No::Calls::no_more_calls();
+    return Sub::StopCalls->stop();
 }
 
 sub void_no_args {
