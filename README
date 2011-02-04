@@ -1,0 +1,33 @@
+NAME
+    Sub::StopCalls - stop sub calls (make it a constant)
+
+SYNOPSIS
+        my $i = 0;
+
+        sub boo {
+            return foo();
+        }
+        sub foo {
+            $i++;
+            return Sub::StopCalls->do();
+        }
+
+        print "$i\n"; # 0
+        boo();
+        print "$i\n"; # 1
+        boo();
+        print "$i\n"; # 1
+
+DESCRIPTION
+    Module provides a way to stop further calls into a function from the
+    current caller.
+
+    Now it's a proof of concept that works under perl 5.13.x and in void
+    context only.
+
+AUTHOR
+    Ruslan Zakirov <ruz@bestpractical.com>
+
+LICENSE
+    Under the same terms as perl itself.
+
