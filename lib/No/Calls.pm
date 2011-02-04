@@ -17,9 +17,6 @@ No::Calls -
 
 =cut
 
-sub no_more_calls {
-}
-
 =head1 AUTHOR
 
 Ruslan Zakirov E<lt>ruz@bestpractical.comE<gt>

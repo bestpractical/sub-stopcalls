@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use Test::More tests => 2;
 
 use No::Calls;
 
@@ -14,15 +14,27 @@ sub foo {
     return No::Calls::no_more_calls();
 }
 
-sub bar {
-    
+sub void_no_args {
     foo();
-
     return 1;
 }
 
-bar();
-is( $i, 1 );
-bar();
-is( $i, 1 );
+sub void_with_args {
+    my $x = 1;
+    foo( 'boo', $x );
+    return 1;
+}
+
+foreach my $func (qw(
+    void_no_args
+    void_with_args
+) ) {
+    my $ref = do { no strict; \&$func; };
+
+    my $cur = $i;
+    $ref->();
+    is( $i, $cur + 1 );
+    $ref->();
+    is( $i, $cur + 1 );
+}
 
