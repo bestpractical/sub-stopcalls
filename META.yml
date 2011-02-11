@@ -1,5 +1,5 @@
 ---
-abstract: ''
+abstract: 'stop sub calls (make it a constant)'
 author:
   - 'Ruslan Zakirov <ruz@bestpractical.com>'
 build_requires:
@@ -12,8 +12,8 @@ license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
-module_name: No::Calls
-name: No-Calls
+module_name: Sub::StopCalls
+name: Sub-StopCalls
 no_index:
   directory:
     - inc
