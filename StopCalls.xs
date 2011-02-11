@@ -1,6 +1,9 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#define NEED_sv_2pv_flags
+#define NEED_vnewSVpvf
+#define NEED_warner
 #define NEED_dopoptosub_at
 #define NEED_caller_cx
 #include "ppport.h"
@@ -52,11 +55,8 @@ find_entry(pTHX_ OP* start_at, OP* retop, OP** sibling, OP** parent )
 {
     OP *o, *p = NULL, *res;
     for (o = start_at; o; p = o, o = o->op_sibling) {
-        if ( o == retop ) {
-            return NULL;
-        }
         /* o->op_next on entersub is a retop */
-        else if (o->op_type == OP_ENTERSUB && o->op_next == retop) {
+        if (o->op_type == OP_ENTERSUB && o->op_next == retop) {
             if (sibling && p) *sibling = p;
             return o;
         }
@@ -139,14 +139,32 @@ static call_info
 caller_info(pTHX)
 {
     call_info res;
-    const PERL_CONTEXT *cx = caller_cx(0, NULL);
-    res.cx = cx;
-
+    const PERL_CONTEXT *cx = res.cx = caller_cx(0, NULL);
+    if (!cx) {
+        Perl_warner(aTHX_ packWARN(WARN_MISC),
+            "Couldn't find caller");
+        return res;
+    }
     res.sibling = NULL;
     res.parent = NULL;
     res.enter = find_entry( aTHX_ (OP*)cx->blk_oldcop, RETOP, &res.sibling, &res.parent );
+    if (!res.enter) {
+        Perl_warner(aTHX_ packWARN(WARN_MISC),
+            "Couldn't find sub entry");
+        res.cx = NULL;
+        return res;
+    }
     res.targets = tree2oplist(aTHX_ res.enter);
-    res.prev = find_prev_ops(aTHX_ (OP*)cx->blk_oldcop, res.targets, RETOP);
+    res.prev = find_prev_ops(
+        aTHX_ (OP*)cx->blk_oldcop, res.targets, cx->blk_oldcop->op_sibling->op_sibling
+    );
+    if ( !res.prev ) {
+        Perl_warner(aTHX_ packWARN(WARN_MISC),
+            "Couldn't find prev ops");
+        res.cx = NULL;
+        free(res.targets);
+        return res;
+    }
 
     return res;
 }
@@ -228,6 +246,8 @@ static void
 stop(pTHX_ SV** stack, I32 items)
 {
     call_info info = caller_info(aTHX);
+    if (!info.cx) return;
+
     switch( info.cx->blk_gimme ) {
         case G_ARRAY:
             array_case( aTHX_ &info, stack, items );
@@ -238,6 +258,8 @@ stop(pTHX_ SV** stack, I32 items)
         case G_VOID:
             void_case( aTHX_ &info );
     }
+    free(info.targets);
+    free(info.prev);
 }
 
 MODULE = Sub::StopCalls   PACKAGE = Sub::StopCalls
