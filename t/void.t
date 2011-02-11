@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 use_ok('Sub::StopCalls');
 #use B::Concise ();
@@ -23,6 +23,12 @@ sub {
 sub {
     my $x = 1;
     foo( 'boo', $x );
+    return 1;
+},
+sub {
+    for (1..10) {
+        foo();
+    }
     return 1;
 },
 );
