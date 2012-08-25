@@ -141,16 +141,14 @@ caller_info(pTHX)
     call_info res;
     const PERL_CONTEXT *cx = res.cx = caller_cx(0, NULL);
     if (!cx) {
-        Perl_warner(aTHX_ packWARN(WARN_MISC),
-            "Couldn't find caller");
+        warn("Couldn't find caller");
         return res;
     }
     res.sibling = NULL;
     res.parent = NULL;
     res.enter = find_entry( aTHX_ (OP*)cx->blk_oldcop, RETOP, &res.sibling, &res.parent );
     if (!res.enter) {
-        Perl_warner(aTHX_ packWARN(WARN_MISC),
-            "Couldn't find sub entry");
+        warn("Couldn't find sub entry");
         res.cx = NULL;
         return res;
     }
@@ -159,8 +157,7 @@ caller_info(pTHX)
         aTHX_ (OP*)cx->blk_oldcop, res.targets, cx->blk_oldcop->op_sibling->op_sibling
     );
     if ( !res.prev ) {
-        Perl_warner(aTHX_ packWARN(WARN_MISC),
-            "Couldn't find prev ops");
+        warn( "Couldn't find prev ops" );
         res.cx = NULL;
         free(res.targets);
         return res;
