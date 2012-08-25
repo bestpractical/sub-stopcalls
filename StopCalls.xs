@@ -14,18 +14,19 @@ typedef struct {
     OP* ops[];
 } oplist;
 
-#define new_oplist(l) l = (oplist*) malloc(sizeof(U16)*2 + 16*sizeof(OP*)); \
+#define new_oplist(l) \
+    l = (oplist*) malloc(sizeof(U16)*2 + 16*sizeof(OP*)); \
     l->length = 0; l->max = 16;
 
 static void
-pushop(oplist* list, OP* op)
+pushop(oplist** list, OP* op)
 {
     if (!op) return;
-    if (list->length >= list->max) {
-        realloc(list, list->max*2);
-        list->max *= 2;
+    if ((*list)->length >= (*list)->max) {
+        (*list) = realloc((*list), sizeof(U16)*2 + sizeof(OP*)*(*list)->max*2);
+        (*list)->max *= 2;
     }
-    list->ops[ list->length++ ] = op;
+    (*list)->ops[ (*list)->length++ ] = op;
 }
 
 static int
@@ -74,7 +75,7 @@ find_entry(pTHX_ OP* start_at, OP* retop, OP** sibling, OP** parent )
 }
 
 static void
-_tree2oplist(pTHX_ oplist* dst, OP* start_at)
+_tree2oplist(pTHX_ oplist** dst, OP* start_at)
 {
     OP *o;
     pushop(dst, start_at);
@@ -90,13 +91,13 @@ tree2oplist(pTHX_ OP* start_at)
 {
     oplist *res;
     new_oplist(res);
-    _tree2oplist(aTHX_ res, start_at);
+    _tree2oplist(aTHX_ &res, start_at);
     return res;
 }
 
 
 static void
-_find_prev_ops(pTHX_ oplist* res, OP* start_at, oplist* into, OP* stop_at )
+_find_prev_ops(pTHX_ oplist** res, OP* start_at, oplist* into, OP* stop_at )
 {
     OP *o; U16 i;
 
@@ -122,7 +123,7 @@ find_prev_ops(pTHX_ OP* start_at, oplist* into, OP* stop_at )
     oplist *res;
 
     new_oplist(res);
-    _find_prev_ops(aTHX_ res, start_at, into, stop_at);
+    _find_prev_ops(aTHX_ &res, start_at, into, stop_at);
     if ( res->length ) return res;
 
     free(res);
